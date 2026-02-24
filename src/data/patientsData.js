@@ -1,0 +1,48 @@
+export const patients = [
+  {
+    id: 1,
+    mrn: 'MRN-204581',
+    name: 'John Anderson',
+    gender: 'M',
+    dob: '03/15/1971',
+    age: 54,
+    contactDetails: '(555) 123-4567 | john.anderson@email.com',
+    lastAppointment: '2026-02-22',
+    tags: [
+      { label: 'Diabetic', color: 'red' },
+      { label: 'Hypertension', color: 'purple' },
+    ],
+    portalStatus: 'Active',
+  },
+  {
+    id: 2,
+    mrn: 'MRN-204582',
+    name: 'Sarah Mitchell',
+    gender: 'F',
+    dob: '07/22/1987',
+    age: 38,
+    contactDetails: '(555) 987-6543 | sarah.mitchell@email.com',
+    lastAppointment: '2026-02-20',
+    tags: [
+      { label: 'Insurance Pending', color: 'blue' },
+      { label: 'Migraine', color: 'orange' },
+      { label: 'Anxiety', color: 'cyan' },
+    ],
+    portalStatus: 'Pending',
+  },
+  {
+    id: 3,
+    mrn: 'MRN-204583',
+    name: 'Robert Williams',
+    gender: 'M',
+    dob: '11/05/1958',
+    age: 67,
+    contactDetails: '(555) 456-7890 | robert.williams@email.com',
+    lastAppointment: '2026-02-18',
+    tags: [
+      { label: 'Asthma', color: 'pink' },
+      { label: 'Hypertension', color: 'purple' },
+    ],
+    portalStatus: 'Inactive',
+  },
+];

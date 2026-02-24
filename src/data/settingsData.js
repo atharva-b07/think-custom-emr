@@ -1,0 +1,105 @@
+export const settingsSections = [
+  {
+    title: 'Appointment',
+    icon: 'Calendar',
+    items: [
+      { label: 'Availability', path: '/settings/appointment/availability' },
+      { label: 'Appointment Types', path: '/settings/appointment/types' },
+      { label: 'Color Configuration', path: '/settings/appointment/color-configuration' },
+      { label: 'Cancellation Policy', path: '/settings/appointment/cancellation-policy' },
+      { label: 'Holidays Settings', path: '/settings/appointment/holidays' },
+      { label: 'Room Settings', path: '/settings/appointment/rooms' },
+    ],
+  },
+  {
+    title: 'Provider Account',
+    icon: 'UserCog',
+    items: [
+      { label: 'Profile', path: '/settings/provider-account/profile' },
+      { label: 'Practice', path: '/settings/provider-account/practice' },
+      { label: 'Notification', path: '/settings/provider-account/notification' },
+      { label: 'Patient Flag', path: '/settings/provider-account/patient-flag' },
+      { label: 'Configuration Co-Signer', path: '/settings/provider-account/co-signer' },
+    ],
+  },
+  {
+    title: 'Practice',
+    icon: 'Building',
+    items: [
+      { label: 'Profile', path: '/settings/practice/profile' },
+      { label: 'Locations', path: '/settings/practice/locations' },
+      { label: 'Users', path: '/settings/practice/users' },
+      { label: 'Roles & Responsibility', path: '/settings/practice/roles' },
+      { label: 'Print Configuration', path: '/settings/practice/print-configuration' },
+    ],
+  },
+  {
+    title: 'Form Builder',
+    icon: 'FileText',
+    items: [
+      { label: 'Intake Form', path: '/settings/form-builder/intake-form' },
+      { label: 'Visit Notes', path: '/settings/form-builder/visit-notes' },
+      { label: 'Consent Forms', path: '/settings/form-builder/consent-forms' },
+      { label: 'Custom Forms', path: '/settings/form-builder/custom-forms' },
+    ],
+  },
+  {
+    title: 'Patient Communications',
+    icon: 'MessageSquare',
+    items: [
+      { label: 'Reminders', path: '/settings/patient-communications/reminders' },
+      { label: 'Patient Portal Access', path: '/settings/patient-communications/portal-access' },
+      { label: 'Education Materials', path: '/settings/patient-communications/education-materials' },
+    ],
+  },
+  {
+    title: 'Master',
+    icon: 'Database',
+    items: [
+      { label: 'Data Import', path: '/settings/master/data-import' },
+      { label: 'Provider Data', path: '/settings/master/provider-data' },
+      { label: 'Patient Data', path: '/settings/master/patient-data' },
+      { label: 'ICD 10 Code', path: '/settings/master/icd-10' },
+      { label: 'CPT Code', path: '/settings/master/cpt' },
+      { label: 'HCPCS Code', path: '/settings/master/hcpcs' },
+      { label: 'Lab Test', path: '/settings/master/lab-test' },
+      { label: 'Imaging Study', path: '/settings/master/imaging-study' },
+      { label: 'Insurance', path: '/settings/master/insurance' },
+    ],
+  },
+  {
+    title: 'Templates',
+    icon: 'Layout',
+    items: [
+      { label: 'Visit Notes', path: '/settings/templates/visit-notes' },
+      { label: 'Custom Questionnaire', path: '/settings/templates/custom-questionnaire' },
+      { label: 'Review Of System (ROS)', path: '/settings/templates/ros' },
+      { label: 'Physical Exam (PE)', path: '/settings/templates/pe' },
+      { label: 'Macros', path: '/settings/templates/macros' },
+      { label: 'Annotable Image', path: '/settings/templates/annotable-image' },
+      { label: 'Order Set', path: '/settings/templates/order-set' },
+    ],
+  },
+  {
+    title: 'Billing',
+    icon: 'CreditCard',
+    items: [
+      { label: 'Services (Fee Schedule)', path: '/settings/billing/fee-schedule' },
+      { label: 'Invoice Setting', path: '/settings/billing/invoice' },
+      { label: 'Claim Setting', path: '/settings/billing/claim' },
+      { label: 'Membership Management', path: '/settings/billing/membership' },
+      { label: 'Other Settings', path: '/settings/billing/other' },
+    ],
+  },
+  {
+    title: 'More',
+    icon: 'MoreHorizontal',
+    items: [
+      { label: 'Inventory Management', path: '/settings/more/inventory' },
+      { label: 'Website Setting', path: '/settings/more/website' },
+      { label: 'Reminder & Notification', path: '/settings/more/reminder-notification' },
+      { label: 'Waiting List Management', path: '/settings/more/waiting-list' },
+      { label: 'Audit Log', path: '/settings/more/audit-log' },
+    ],
+  },
+];

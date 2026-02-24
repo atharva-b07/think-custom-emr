@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Search, Filter, Plus, ChevronDown, ChevronLeft, ChevronRight, User, UserPlus } from 'lucide-react';
 import Modal from '@/components/common/Modal';
 
@@ -275,7 +276,7 @@ export default function Patients() {
                         <User className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
-                        <span className="text-[13px] text-blue-600 hover:text-blue-800 font-semibold cursor-pointer hover:underline">{patient.name}</span>
+                        <Link href={`/patients/${patient.id}`} className="text-[13px] text-blue-600 hover:text-blue-800 font-semibold cursor-pointer hover:underline">{patient.name}</Link>
                         <span className="text-gray-400 ml-1.5 text-[11px]">
                           ({patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : 'Other'})
                         </span>

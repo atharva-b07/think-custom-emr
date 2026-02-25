@@ -8,7 +8,9 @@ import {
   AlertTriangle, ChevronDown, Sparkles, Syringe, Stethoscope,
   Heart, Pill, Activity, FileText, History, FlaskConical, Image,
   ClipboardList, FileBarChart, CreditCard, UserCircle, ChevronRight,
+  Pencil, Loader2,
 } from 'lucide-react';
+import Modal from '@/components/common/Modal';
 
 // Sidebar tabs matching the screenshot
 const sidebarTabs = [
@@ -240,7 +242,7 @@ export default function PatientDetailPage() {
             <FacesheetView appointments={appointments} />
           )}
           {activeSideTab === 'allergies' && (
-            <AllergiesTabView />
+            <AllergiesTabView patientId={id} onBackToFacesheet={() => setActiveSideTab('facesheet')} />
           )}
           {activeSideTab !== 'facesheet' && activeSideTab !== 'allergies' && (
             <PlaceholderView label={sidebarTabs.find(t => t.id === activeSideTab)?.label || activeSideTab} />
@@ -403,20 +405,355 @@ function FacesheetView({ appointments }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ALLERGIES TAB VIEW — Empty placeholder for ticket
+   ALLERGIES TAB VIEW — Full CRUD with list + add/edit modal
    ═══════════════════════════════════════════════════════════════ */
-function AllergiesTabView() {
+const emptyAllergyForm = {
+  allergyType: 'Drug',
+  allergyName: '',
+  reaction: '',
+  severity: '',
+  onsetDate: '',
+  recordedBy: '',
+  recordedByRole: '',
+  note: '',
+};
+
+function AllergiesTabView({ patientId, onBackToFacesheet }) {
+  const [allergies, setAllergies] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAllergy, setEditingAllergy] = useState(null);
+  const [formData, setFormData] = useState(emptyAllergyForm);
+  const [formError, setFormError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const fetchAllergies = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/patients/${patientId}/allergies`);
+      if (res.ok) {
+        const data = await res.json();
+        setAllergies(data.allergies || []);
+      }
+    } catch {
+      // keep existing data
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllergies();
+  }, [patientId]);
+
+  const openAddModal = () => {
+    setEditingAllergy(null);
+    setFormData(emptyAllergyForm);
+    setFormError('');
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (allergy) => {
+    setEditingAllergy(allergy);
+    // Convert DD-MM-YYYY back to YYYY-MM-DD for the date input
+    const onsetParts = allergy.onsetDate ? allergy.onsetDate.split('-') : [];
+    const onsetDateForInput = onsetParts.length === 3 ? `${onsetParts[2]}-${onsetParts[1]}-${onsetParts[0]}` : '';
+
+    setFormData({
+      allergyType: allergy.allergyType,
+      allergyName: allergy.allergyName,
+      reaction: allergy.reaction,
+      severity: allergy.severity,
+      onsetDate: onsetDateForInput,
+      recordedBy: allergy.recordedBy,
+      recordedByRole: allergy.recordedByRole,
+      note: allergy.note || '',
+    });
+    setFormError('');
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingAllergy(null);
+    setFormData(emptyAllergyForm);
+    setFormError('');
+  };
+
+  const handleFormChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async () => {
+    setFormError('');
+    setIsSaving(true);
+
+    try {
+      const url = editingAllergy
+        ? `/api/patients/${patientId}/allergies/${editingAllergy.id}`
+        : `/api/patients/${patientId}/allergies`;
+
+      const method = editingAllergy ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setFormError(data.error || 'Something went wrong');
+        return;
+      }
+
+      closeModal();
+      fetchAllergies();
+    } catch {
+      setFormError('Network error. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-8" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mb-4">
-          <AlertTriangle className="w-7 h-7 text-amber-500" />
+    <div className="space-y-0">
+      {/* Header */}
+      <div className="bg-white rounded-t-xl border border-gray-200 px-5 py-3.5 flex items-center justify-between" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div className="flex items-center gap-3">
+          <button onClick={onBackToFacesheet} className="p-1 rounded-lg hover:bg-gray-100 transition text-gray-400 hover:text-gray-600 cursor-pointer">
+            <ArrowLeft className="w-4.5 h-4.5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md text-amber-600 bg-amber-50 flex items-center justify-center">
+              <AlertTriangle className="w-3.5 h-3.5" />
+            </div>
+            <h2 className="text-[14px] font-bold text-gray-900">Allergies</h2>
+          </div>
         </div>
-        <h3 className="text-base font-semibold text-gray-900 mb-1">Patient Allergies</h3>
-        <p className="text-sm text-gray-400 max-w-sm">
-          Allergy records for this patient will appear here. This section is under development.
-        </p>
+        <button
+          onClick={openAddModal}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-white rounded-lg cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}
+        >
+          <Plus className="w-3.5 h-3.5" /> Add Allergies
+        </button>
       </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-b-xl border border-t-0 border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+          </div>
+        ) : allergies.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center mb-3">
+              <AlertTriangle className="w-6 h-6 text-amber-400" />
+            </div>
+            <p className="text-[13px] text-gray-500">No allergies recorded for this patient.</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">Click &quot;+ Add Allergies&quot; to add one.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50/80 border-b border-gray-100">
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">No.</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Allergy Type</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Allergies</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Reaction</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Severity</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Onset Date</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Recorded Date</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Recorded By</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wide w-10"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {allergies.map((allergy, index) => (
+                  <tr key={allergy.id} className="hover:bg-gray-50/50 transition">
+                    <td className="px-4 py-2.5 text-[12px] text-gray-500 font-mono">{String(index + 1).padStart(3, '0')}</td>
+                    <td className="px-4 py-2.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        allergy.allergyType === 'Drug' ? 'bg-purple-50 text-purple-700' :
+                        allergy.allergyType === 'Food' ? 'bg-orange-50 text-orange-700' :
+                        'bg-teal-50 text-teal-700'
+                      }`}>
+                        {allergy.allergyType}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-[12px] text-gray-900 font-medium">{allergy.allergyName}</td>
+                    <td className="px-4 py-2.5 text-[12px] text-gray-600">{allergy.reaction}</td>
+                    <td className="px-4 py-2.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        allergy.severity === 'Severe' ? 'bg-red-50 text-red-700' :
+                        allergy.severity === 'Moderate' ? 'bg-amber-50 text-amber-700' :
+                        'bg-green-50 text-green-700'
+                      }`}>
+                        {allergy.severity}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-[12px] text-gray-500">{allergy.onsetDate}</td>
+                    <td className="px-4 py-2.5 text-[12px] text-gray-500">{allergy.recordedDate}</td>
+                    <td className="px-4 py-2.5 text-[12px] text-gray-600">{allergy.recordedBy}</td>
+                    <td className="px-4 py-2.5">
+                      <button
+                        onClick={() => openEditModal(allergy)}
+                        className="p-1 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Add / Edit Modal */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingAllergy ? 'Edit Allergy' : 'Add Allergies'} size="lg">
+        <div className="space-y-4">
+          {formError && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg border border-red-100 text-sm text-red-700">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              {formError}
+            </div>
+          )}
+
+          {/* Allergy Type — Radio buttons */}
+          <div>
+            <label className="block text-[13px] font-medium text-gray-700 mb-2">Allergy Type</label>
+            <div className="flex items-center gap-4">
+              {['Drug', 'Food', 'Environment'].map((type) => (
+                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="allergyType"
+                    value={type}
+                    checked={formData.allergyType === type}
+                    onChange={() => handleFormChange('allergyType', type)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="text-[13px] text-gray-700">{type}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Allergy Name + Reaction */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1">Allergy Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={formData.allergyName}
+                onChange={(e) => handleFormChange('allergyName', e.target.value)}
+                placeholder="Select or Search Allergy"
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1">Reaction <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={formData.reaction}
+                onChange={(e) => handleFormChange('reaction', e.target.value)}
+                placeholder="Select Reaction"
+                className="input-field"
+              />
+            </div>
+          </div>
+
+          {/* Severity + Onset Date */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1">Severity <span className="text-red-500">*</span></label>
+              <select
+                value={formData.severity}
+                onChange={(e) => handleFormChange('severity', e.target.value)}
+                className="input-field"
+              >
+                <option value="">Select Severity</option>
+                <option value="Mild">Mild</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Severe">Severe</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1">Onset Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                value={formData.onsetDate}
+                onChange={(e) => handleFormChange('onsetDate', e.target.value)}
+                className="input-field"
+              />
+            </div>
+          </div>
+
+          {/* Recorded By + Recorded By Role */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1">Recorded By <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={formData.recordedBy}
+                onChange={(e) => handleFormChange('recordedBy', e.target.value)}
+                placeholder="Enter name"
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1">Recorded By <span className="text-red-500">*</span></label>
+              <select
+                value={formData.recordedByRole}
+                onChange={(e) => handleFormChange('recordedByRole', e.target.value)}
+                className="input-field"
+              >
+                <option value="">Select Role</option>
+                <option value="Staff">Staff</option>
+                <option value="Patient">Patient</option>
+                <option value="Provider">Provider</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Note */}
+          <div>
+            <label className="block text-[13px] font-medium text-gray-700 mb-1">Note</label>
+            <textarea
+              value={formData.note}
+              onChange={(e) => handleFormChange('note', e.target.value)}
+              placeholder="Type here"
+              rows={3}
+              className="input-field resize-none"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-gray-100">
+            <button
+              onClick={closeModal}
+              className="px-4 py-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSaving}
+              className="px-5 py-2 text-[13px] font-medium text-white rounded-lg transition cursor-pointer disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : editingAllergy ? 'Update' : 'Add'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
